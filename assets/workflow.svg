@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="430" viewBox="0 0 1120 430" role="img" aria-labelledby="title desc">
+  <title id="title">HarnessKit: evidence-backed project knowledge</title>
+  <desc id="desc">Read source code with harness-init, maintain project knowledge with harness-spec, and audit without editing with harness-check. harness-update independently updates the installed skills.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8" fill="none" stroke="#64748b" stroke-width="1.5"/></marker>
+    <style>text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif} .title{font-size:24px;font-weight:700;fill:#0f172a}.label{font-size:19px;font-weight:650;fill:#0f172a}.body{font-size:15px;fill:#475569}.mono{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:16px;fill:#334155}.small{font-size:13px;fill:#64748b}</style>
+  </defs>
+  <rect width="1120" height="430" rx="20" fill="#f8fafc"/>
+  <text x="40" y="48" class="title">From source evidence to maintained project knowledge</text>
+  <text x="40" y="76" class="body">A small set of Codex skills. Explicit boundaries. Reviewable Markdown.</text>
+  <rect x="40" y="112" width="270" height="180" rx="14" fill="#fff" stroke="#cbd5e1"/>
+  <rect x="40" y="112" width="270" height="5" rx="2" fill="#2563eb"/>
+  <text x="62" y="150" class="label">01  Discover</text>
+  <text x="62" y="182" class="mono">$harness-init</text>
+  <text x="62" y="220" class="body">Source · build config · tests</text>
+  <text x="62" y="247" class="body">Trace contracts before writing</text>
+  <path d="M322 202H376" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+  <rect x="390" y="112" width="340" height="180" rx="14" fill="#fff" stroke="#cbd5e1"/>
+  <rect x="390" y="112" width="340" height="5" rx="2" fill="#0d9488"/>
+  <text x="412" y="150" class="label">02  Maintain</text>
+  <text x="412" y="182" class="mono">$harness-spec</text>
+  <text x="412" y="220" class="body">AGENTS.md → .harness/index.md</text>
+  <text x="412" y="247" class="body">Architecture · features · specs</text>
+  <text x="412" y="272" class="small">Evidence and verification stay with the project</text>
+  <path d="M742 202H796" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+  <rect x="810" y="112" width="270" height="180" rx="14" fill="#fff" stroke="#cbd5e1"/>
+  <rect x="810" y="112" width="270" height="5" rx="2" fill="#7c3aed"/>
+  <text x="832" y="150" class="label">03  Audit</text>
+  <text x="832" y="182" class="mono">$harness-check</text>
+  <text x="832" y="220" class="body">Links · indexes · responsibilities</text>
+  <text x="832" y="247" class="body">Report findings. No edits.</text>
+  <rect x="40" y="325" width="1040" height="65" rx="12" fill="#e2e8f0"/>
+  <text x="62" y="352" class="mono">$harness-update</text>
+  <text x="62" y="376" class="small">Updates installed skills only. Existing project documents evolve independently.</text>
+</svg>
