@@ -4,7 +4,7 @@
 
 | Skill | 用途 |
 | --- | --- |
-| `$harness-init` | 初始化项目 AGENTS.md 与完整 knowledge 框架 |
+| `$harness-init` | 初始化项目 AGENTS.md 与完整 .harness 框架 |
 | `$harness-update` | 更新本机安装的两个 Skill，不修改项目文件 |
 
 ## 安装
@@ -31,7 +31,7 @@ $harness-init 初始化当前项目，保留已有内容与未提交改动。
 
 ```text
 AGENTS.md
-knowledge/
+.harness/
 ├── index.md
 ├── architecture.md
 ├── specs/development.md

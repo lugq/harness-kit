@@ -5,7 +5,7 @@ description: 使用内置规范和模板初始化项目 AGENTS.md 与知识框�
 
 # Harness 初始化
 
-执行前读取 [初始化规范](references/initialization.md)。使用本 Skill 内的 [AGENTS.md 模板](assets/AGENTS.md) 和 [知识索引](assets/knowledge/index.md) 及 assets/knowledge/ 下全部框架文件创建或合并目标文件。空项目原样复制完整 assets 内容，不重新生成模板；已有文件按规范合并。
+执行前读取 [初始化规范](references/initialization.md)。使用本 Skill 内的 [AGENTS.md 模板](assets/AGENTS.md) 和 [知识索引](assets/.harness/index.md) 及 assets/.harness/ 下全部框架文件创建或合并目标文件。空项目原样复制完整 assets 内容，不重新生成模板；已有文件按规范合并。
 
 规范、模板随 GitHub 仓库版本分发，执行时使用当前安装版本，无需读取在线 Page。Page 只是阅读映射，不是运行时依赖或覆盖本地版本的来源。
 
