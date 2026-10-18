@@ -1,4 +1,4 @@
-# harness-init
+# HarnessKit
 
 使用随 Skill 分发的规范和模板，为项目创建或合并 AGENTS.md 与 knowledge 知识入口。
 
@@ -9,27 +9,27 @@ GitHub 仓库是版本来源。[Codex Harness 工程实践 Page](https://chatgpt
 仓库目前为私有，安装环境需要有仓库读取权限。在 Codex 中发送：
 
 ```text
-使用 $skill-installer，从 GitHub 仓库 lugq/harness-init 安装 Skill。
-Skill 位于仓库根目录，分支 main，安装名称 harness-init。
+使用 $skill-installer，从 GitHub 仓库 lugq/harness-kit 安装 Skill。
+Skill 位于仓库根目录，分支 main，安装名称 harness-kit。
 ```
 
-安装后下一轮输入 `$harness-init` 检查是否可用；未显示时重新打开会话或重启客户端。
+安装后下一轮输入 `$harness-kit` 检查是否可用；未显示时重新打开会话或重启客户端。
 
 也可手动安装。以下 macOS / Linux 命令需要 Git 与有私有仓库读取权限的 GitHub SSH 凭据：
 
 ```bash
 mkdir -p ~/.agents/skills
-git clone git@github.com:lugq/harness-init.git ~/.agents/skills/harness-init
+git clone git@github.com:lugq/harness-kit.git ~/.agents/skills/harness-kit
 ```
 
-Windows 可克隆到用户目录下 `.agents/skills/harness-init`。目录已存在时先检查，不直接覆盖。安装会在运行环境保存 Skill 副本，GitHub 不会自动将个人 Skill 同步至其他机器或云端任务。
+Windows 可克隆到用户目录下 `.agents/skills/harness-kit`。目录已存在时先检查，不直接覆盖。安装会在运行环境保存 Skill 副本，GitHub 不会自动将个人 Skill 同步至其他机器或云端任务。
 
 ## 使用
 
 在 Codex 中打开目标项目，发送：
 
 ```text
-使用 $harness-init 初始化当前项目。
+使用 $harness-kit init 初始化当前项目。
 保留已有 AGENTS.md、知识文档和未提交修改，完成后报告创建、修改和复用的文件。
 ```
 
@@ -47,7 +47,7 @@ Windows 可克隆到用户目录下 `.agents/skills/harness-init`。目录已存
 ## 文件结构
 
 ```text
-harness-init/
+harness-kit/
 ├── SKILL.md
 ├── agents/openai.yaml
 ├── references/initialization.md   # 初始化规范
@@ -63,8 +63,8 @@ harness-init/
 手动克隆安装可在检查本地改动后更新：
 
 ```bash
-git -C ~/.agents/skills/harness-init status --short
-git -C ~/.agents/skills/harness-init pull --ff-only
+git -C ~/.agents/skills/harness-kit status --short
+git -C ~/.agents/skills/harness-kit pull --ff-only
 ```
 
 存在改动时先合并差异，不强制重置。通过安装器安装的副本，让 Codex 检查后更新，不假定安装器会覆盖现有目录。
@@ -85,7 +85,7 @@ git -C ~/.agents/skills/harness-init pull --ff-only
 在 Codex 中发送：
 
 ```text
-$harness-init update
+$harness-kit update
 ```
 
 该命令更新 Skill 自身，不修改项目中的 AGENTS.md 或 knowledge。需要 Git 和具有私有仓库读取权限的 GitHub SSH 凭据；不会要求你在聊天里提供令牌。

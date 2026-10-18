@@ -8,7 +8,7 @@ import shutil
 import subprocess
 import tempfile
 
-REPO = 'git@github.com:lugq/harness-init.git'
+REPO = 'git@github.com:lugq/harness-kit.git'
 STATE = '.harness-install.json'
 
 def files(root):
@@ -31,8 +31,8 @@ def main():
         if dirty.strip():
             raise SystemExit('检测到本地修改，停止更新。')
         origin = subprocess.check_output(['git', '-C', str(target), 'remote', 'get-url', 'origin'], text=True).strip()
-        if origin not in (REPO, 'https://github.com/lugq/harness-init.git', 'https://github.com/lugq/harness-init'):
-            raise SystemExit('远端不是 lugq/harness-init，停止更新。')
+        if origin not in (REPO, 'https://github.com/lugq/harness-kit.git', 'https://github.com/lugq/harness-kit'):
+            raise SystemExit('远端不是 lugq/harness-kit，停止更新。')
         subprocess.run(['git', '-C', str(target), 'fetch', 'origin', 'main'], check=True)
         if args.check:
             print(subprocess.check_output(['git', '-C', str(target), 'rev-parse', 'origin/main'], text=True).strip())
@@ -79,7 +79,7 @@ def main():
                     (target / name).unlink()
             shutil.copytree(backup, target, dirs_exist_ok=True)
             raise
-        print('harness-init 已更新至 ' + revision)
+        print('harness-kit 已更新至 ' + revision)
         print('下次调用使用更新后的 Skill；项目文件未修改。')
 
 if __name__ == '__main__':
