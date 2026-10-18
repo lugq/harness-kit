@@ -33,7 +33,7 @@ Windows 可克隆到用户目录下 `.agents/skills/harness-init`。目录已存
 保留已有 AGENTS.md、知识文档和未提交修改，完成后报告创建、修改和复用的文件。
 ```
 
-空项目默认创建：
+空项目直接复制完整内置模板，不重新生成：
 
 ```text
 项目根目录/
@@ -42,7 +42,7 @@ Windows 可克隆到用户目录下 `.agents/skills/harness-init`。目录已存
     └── index.md
 ```
 
-已有项目先检查并合并，重复执行只补缺失项。架构、功能 Spec 和决策文档有真实内容后按需创建。不会生成业务代码、安装依赖或自动提交推送。
+已有项目先检查并合并，重复执行只补缺失项。架构框架、开发规范和功能与决策指南默认创建；具体功能 Spec 与决策记录按需创建，未知事实保留待确认。不会生成业务代码、安装依赖或自动提交推送。
 
 ## 文件结构
 
@@ -52,7 +52,7 @@ harness-init/
 ├── agents/openai.yaml
 ├── references/initialization.md   # 初始化规范
 ├── assets/AGENTS.md              # 项目指令模板
-├── assets/knowledge/index.md     # 带查询表格的空项目索引
+├── assets/knowledge/index.md     # 带查询表格的知识索引及完整框架
 └── README.md
 ```
 

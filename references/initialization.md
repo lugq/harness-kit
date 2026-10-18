@@ -9,9 +9,19 @@
 3. 区分空项目与已有项目，列明将创建、修改及复用的路径。在用户初始化授权内执行；目标不明或规则冲突无法消解时，询问具体问题。
 
 ## 空项目
-默认只创建根目录 AGENTS.md 和 knowledge/index.md，分别使用 ../assets/AGENTS.md 与 ../assets/knowledge/index.md 的完整内容。
+将 assets/AGENTS.md 和 assets/knowledge/ 下全部文件原样复制到项目对应位置：
 
-architecture.md、specs/、features/、decisions/ 在形成真实架构、约束、功能或决策后按需创建。保留分类职责，不生成空占位知识文件，不编造项目事实。docs/ 用于集成与交付文档。
+```text
+AGENTS.md
+knowledge/
+├── index.md
+├── architecture.md
+├── specs/development.md
+├── features/README.md
+└── decisions/README.md
+```
+
+空项目直接复制完整内容，不重新生成、摘要或改写模板。项目架构未知项保持待确认，功能和决策指南提供后续模板，不预填业务事实。docs/ 用于集成与交付文档。
 
 ## 已有项目合并
 - 保留已有 AGENTS.md，仅补缺失的知识入口、按需读取、沉淀检查与完成汇报要求；语义等价规则不重复追加。
@@ -24,7 +34,7 @@ architecture.md、specs/、features/、decisions/ 在形成真实架构、约束
 ## 验收
 - 项目根目录、AGENTS.md 知识入口与实际文件一致。
 - 规则包含独立判断、按需读取、必要验证、沉淀检查及完成汇报。
-- 索引登记路径存在，链接可解析；空项目允许只有表头、没有知识条目。
+- 索引登记路径存在，链接可解析；空项目索引应登记实际复制的架构、开发规范和两份指南。
 - 原有内容和未提交修改保留，无重复规则、无虚构事实。
 - 修改范围仅为授权的指令与知识入口；文档检查不等于业务测试通过。
 - 汇报新建、修改及复用文件、核对结果和按需暂未创建的文档。
