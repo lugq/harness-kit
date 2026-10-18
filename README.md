@@ -1,25 +1,27 @@
 # HarnessKit
 
-为编程 Agent 提供可复用的项目指令与知识框架。仓库包含三个独立 Skill，可在 Codex 的 `$` 菜单分别选择。
+为编程 Agent 提供可复用的项目指令与知识框架。仓库包含四个独立 Skill，可在 Codex 的 `$` 菜单分别选择。
 
 | Skill | 用途 |
 | --- | --- |
 | `$harness-init` | 初始化项目 AGENTS.md 与完整 .harness 框架 |
 | `$harness-spec` | 新增或维护 Feature / Spec，登记索引并核对源码证据 |
-| `$harness-update` | 更新本机安装的三个 Skill，不修改项目文件 |
+| `$harness-check` | 只读检查结构与文档职责，报告问题，不自动修复 |
+| `$harness-update` | 更新本机安装的四个 Skill，不修改项目文件 |
 
 ## 安装
 
 仓库目前为私有，安装环境需要有 GitHub 仓库读取权限。在 Codex 中发送：
 
 ```text
-使用 $skill-installer，从 lugq/harness-kit 的 main 分支安装以下三个 Skill：
+使用 $skill-installer，从 lugq/harness-kit 的 main 分支安装以下四个 Skill：
 skills/harness-init
 skills/harness-spec
+skills/harness-check
 skills/harness-update
 ```
 
-安装后下一轮输入 `$harness-`，应看到 Harness Init、Harness Spec 和 Harness Update 三个入口。若未出现，重新打开会话或重启客户端。安装会在执行环境保存文件，不会自动同步到其他机器或云端。
+安装后下一轮输入 `$harness-`，应看到 Harness Init、Harness Spec、Harness Check 和 Harness Update 四个入口。若未出现，重新打开会话或重启客户端。安装会在执行环境保存文件，不会自动同步到其他机器或云端。
 
 ## 使用
 
@@ -61,6 +63,14 @@ $harness-spec 根据真实代码，为视频导出功能新增或更新 Feature 
 
 `harness-spec` 是 Codex Skill 入口，不是系统终端命令；不会实现功能或重做全项目初始化。
 
+日常只读审计可使用：
+
+```text
+$harness-check 检查当前项目的 Harness 文档，先报告问题，不修改文件。
+```
+
+结构脚本检查索引可达性、重复登记、缺失用途/读取条件和本地断链。Agent 另外阅读文档，判断是否把详细 Spec 写进索引、功能与共享契约是否混用，并按需核对源码。占位词或长篇内容只是复核线索，不能机械判错。默认不修复、不写 verification.md、不生成项目内报告；报告区分确定错误、待确认风险与未检查范围。
+
 更新 Skill 本身：
 
 ```text
@@ -73,7 +83,7 @@ $harness-update
 
 所有新版目录先暂存并校验，再在同一文件系统中替换，持久备份保留至替换完成。普通异常和可捕获中断会回滚；强制终止后，下次运行会提示未完成事务。确认没有更新进程运行后，给脚本加 `--recover` 恢复旧安装；恢复失败仍保留备份路径。多目录替换不是单次原子操作，恢复前不要调用 Skills。断电造成的磁盘损坏不在恢复保证内。
 
-新版更新器支持从两个入口升级为三个，自动补装缺少的 harness-spec，并在失败时恢复原来没有该目录的状态。旧版更新器首次只认识两个入口：先更新后，再调用一次新版 `$harness-update` 补装 harness-spec。本地已存在同名修改时停止，不覆盖。
+新版更新器支持从两个或三个入口升级为四个，自动补装缺少的 harness-spec、harness-check，并在失败时恢复原来没有该目录的状态。旧版更新器先更新已有入口，再调用一次新版 `$harness-update` 补齐新入口。本地已存在同名修改时停止，不覆盖。
 
 仅检查可请求执行更新脚本并加 `--check`。更新仅作用于 Skills，不覆盖已初始化项目。GitHub 更新不会自动生效，需显式调用更新。
 
@@ -92,6 +102,11 @@ skills/
 │   ├── references/maintenance.md
 │   ├── templates/
 │   └── scripts/check_docs.py
+├── harness-check/
+│   ├── SKILL.md
+│   ├── agents/openai.yaml
+│   ├── references/audit.md
+│   └── scripts/audit.py
 └── harness-update/
     ├── SKILL.md
     ├── agents/openai.yaml
@@ -100,7 +115,7 @@ skills/
 
 规范和模板随仓库版本分发，运行不依赖在线 Page。[Page](https://chatgpt.com/space/page_bd948ce9c828819197f84cee0c3dde33) 仅为阅读映射，修改仓库后人工同步。
 
-旧版单入口 harness-kit 安装需先核对本地改动，再迁移为三个独立目录并移出旧入口，避免重复菜单。缺少安装基线且无法核验时，不强制覆盖。
+旧版单入口 harness-kit 安装需先核对本地改动，再迁移为四个独立目录并移出旧入口，避免重复菜单。缺少安装基线且无法核验时，不强制覆盖。
 
 ## 从代码生成 Spec 的质量标准
 
@@ -114,4 +129,4 @@ Skill 内 templates/feature.md 和 templates/spec.md 分别约定功能闭环与
 
 ## 维护验证
 
-在仓库根目录执行 `python3 -m unittest discover -s tests -v`，覆盖索引登记与链接检查、模板一致性、AGENTS 严格模板、无基线首次升级、本地修改保护、旧版补装、多目录失败恢复与中断残留恢复。三个 Skill 还需通过 skill-creator 的 quick_validate.py。初始化已有知识目录默认只盘点；独立生成文档不代表授权切换原入口。harness-init 与 harness-spec 的 Feature/Spec 模板需同时维护，一致性由测试检查。
+在仓库根目录执行 `python3 -m unittest discover -s tests -v`，覆盖索引登记与链接检查、模板一致性、AGENTS 严格模板、无基线首次升级、本地修改保护、旧版补装、多目录失败恢复与中断残留恢复。四个 Skill 还需通过 skill-creator 的 quick_validate.py。初始化已有知识目录默认只盘点；独立生成文档不代表授权切换原入口。harness-init 与 harness-spec 的 Feature/Spec 模板需同时维护，一致性由测试检查。

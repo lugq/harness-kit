@@ -210,6 +210,30 @@ class UpdateTests(unittest.TestCase):
             u.update(self.source, self.parent, 'new')
         self.assertTrue((self.parent/'harness-spec'/'local.md').exists())
 
+    def test_three_entry_install_adds_check(self):
+        shutil.rmtree(self.parent/'harness-check')
+        self.baseline_for_existing()
+        u.update(self.source, self.parent, 'new', check=True)
+        self.assertFalse((self.parent/'harness-check').exists())
+        u.update(self.source, self.parent, 'new')
+        self.assertEqual(u.hashes(self.parent/'harness-check'), u.hashes(self.source/'skills/harness-check'))
+
+    def test_failed_check_install_restores_absence(self):
+        shutil.rmtree(self.parent/'harness-check')
+        self.baseline_for_existing()
+        original = Path.write_text
+        def fail(path, *args, **kwargs):
+            if path.name == 'committed':
+                raise OSError('interrupted check install')
+            return original(path, *args, **kwargs)
+        with patch.object(Path, 'write_text', fail):
+            with self.assertRaises(OSError):
+                u.update(self.source, self.parent, 'new')
+        self.assertFalse((self.parent/'harness-check').exists())
+        for name in u.NAMES:
+            if name != 'harness-check':
+                self.assertEqual(u.hashes(self.parent/name), self.before[name])
+
 
 if __name__ == '__main__':
     unittest.main()

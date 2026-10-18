@@ -1,4 +1,4 @@
 interface:
   display_name: "Harness Update"
-  short_description: "从 GitHub 更新用户级 HarnessKit 三个 Skill，保护本地修改"
+  short_description: "从 GitHub 更新用户级 HarnessKit 四个 Skill，保护本地修改"
   default_prompt: "使用 $harness-update 更新已安装的 HarnessKit Skills。"

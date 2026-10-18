@@ -1,0 +1,4 @@
+interface:
+  display_name: "Harness Check"
+  short_description: "只读检查 Harness 文档结构、索引与内容职责，报告问题及证据"
+  default_prompt: "使用 $harness-check 检查当前项目的 Harness 文档，只报告问题，不修改文件。"

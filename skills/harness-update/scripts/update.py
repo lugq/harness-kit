@@ -11,7 +11,7 @@ import subprocess
 import tempfile
 
 REPO = 'https://github.com/lugq/harness-kit.git'
-NAMES = ('harness-init', 'harness-update', 'harness-spec')
+NAMES = ('harness-init', 'harness-update', 'harness-spec', 'harness-check')
 STATE = '.harness-install.json'
 TRANSACTION = '.harness-update-transaction'
 
@@ -55,6 +55,11 @@ def validate(root, name):
                 raise ValueError('Skill 引用不存在或越界：' + str(doc) + ' → ' + target)
     if name == 'harness-update':
         compile((root/'scripts/update.py').read_text(), 'update.py', 'exec')
+    elif name == 'harness-check':
+        for required in ('references/audit.md', 'scripts/audit.py'):
+            if not (root/required).is_file():
+                raise ValueError('Missing resource: ' + required)
+        compile((root/'scripts/audit.py').read_text(), 'audit.py', 'exec')
     elif name == 'harness-spec':
         for required in ('references/maintenance.md', 'templates/feature.md',
                          'templates/spec.md', 'scripts/check_docs.py'):
@@ -123,7 +128,7 @@ def update(source, parent, revision, check=False):
         validate(src, name)
         if dst.is_symlink():
             raise ValueError('Skill directory must not be a symlink: ' + str(dst))
-        if name == 'harness-spec' and not dst.exists():
+        if name in ('harness-spec', 'harness-check') and not dst.exists():
             absent.append(name)
             continue
         if not dst.is_dir():
@@ -137,7 +142,7 @@ def update(source, parent, revision, check=False):
         elif current != hashes(src) and not historical_match(source, name, current):
             raise ValueError('安装内容不匹配可信历史版本，停止更新：' + name)
     if check:
-        print('远端版本：' + revision + '；Skills 可安全更新，缺少的 harness-spec 将新增（未写入）。')
+        print('远端版本：' + revision + '；Skills 可安全更新（未写入）；将新增：' + ', '.join(absent))
         return
     transaction.mkdir()  # Also excludes concurrent updaters; do not auto-recover a live run.
     try:
