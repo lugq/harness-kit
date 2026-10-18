@@ -1,0 +1,4 @@
+interface:
+  display_name: "Harness 初始化"
+  short_description: "依据指定 Page 的最新规范创建或合并项目指令与知识入口"
+  default_prompt: "使用 $harness-init，依据配置的 Page 初始化当前项目的 AGENTS.md 和知识入口。"
