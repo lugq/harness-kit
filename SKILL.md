@@ -1,9 +1,18 @@
 ---
 name: harness-init
-description: 使用随 Skill 分发的初始化规范和模板，创建或合并项目 AGENTS.md 与知识入口。用于初始化项目 Harness；不用于业务开发、日常 Spec 维护或仅讨论方案。
+description: 使用随 Skill 分发的初始化规范和模板，创建或合并项目 AGENTS.md 与知识入口。用于初始化项目 Harness 或通过 update 更新 Skill 自身；不用于业务开发、日常 Spec 维护或仅讨论方案。
 ---
 
 # Harness 初始化
+
+## 命令路由
+
+- `$harness-init update`：只更新本 Skill。执行 `python3 <本 Skill 绝对目录>/scripts/update.py`；可加 `--check` 仅检查。不要执行项目初始化。需要 Git 及仓库读取权限，网络或认证失败时报告原因，不覆盖文件。检测到本地修改时停止，不强制更新。
+- `$harness-init` 或初始化请求：执行下方初始化流程。
+
+这里的 update 是 Skill 调用参数，不是独立终端命令。无安装基线且文件不同的旧安装，先备份并核对差异，由用户确认取舍后再建立基线；不直接覆盖。
+
+## 初始化流程
 
 执行前读取 [初始化规范](references/initialization.md)。使用本 Skill 内的 [AGENTS.md 模板](assets/AGENTS.md) 和 [知识索引](assets/knowledge/index.md) 及 assets/knowledge/ 下全部框架文件创建或合并目标文件。空项目原样复制完整 assets 内容，不重新生成模板；已有文件按规范合并。
 
