@@ -92,4 +92,4 @@ $harness-init update
 
 更新脚本先拉取 main 到临时目录，再核对安装基线。有本地修改或文件冲突时停止；缺少基线的旧安装若与远端不同，也会停止并要求核对，不强制覆盖。更新失败会尝试恢复备份。下次调用使用新版本，必要时重新打开会话。
 
-仅检查可请求 Codex 执行 `scripts/update.py --check`。这是 Skill 内的命令路由，不是系统独立命令。Git 克隆安装仍使用检查改动后的 `git pull --ff-only`。
+仅检查可请求 Codex 执行 `scripts/update.py --check`。这是 Skill 内的命令路由，不是系统独立命令。Git 克隆安装会检查本地修改、远端和分支，再执行快进更新。
