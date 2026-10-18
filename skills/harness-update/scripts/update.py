@@ -1,67 +1,178 @@
 #!/usr/bin/env python3
-"""Update the two installed HarnessKit skills, preserving local edits."""
+"""Safely update the installed HarnessKit pair; never touch project files."""
 import argparse
 import hashlib
 import json
+import os
 from pathlib import Path
+import re
 import shutil
 import subprocess
 import tempfile
 
-REPO = 'git@github.com:lugq/harness-kit.git'
+REPO = 'https://github.com/lugq/harness-kit.git'
 NAMES = ('harness-init', 'harness-update')
 STATE = '.harness-install.json'
+TRANSACTION = '.harness-update-transaction'
+
+
+def git(*args):
+    env = dict(os.environ, GIT_TERMINAL_PROMPT='0', GCM_INTERACTIVE='Never')
+    env['GIT_SSH_COMMAND'] = 'ssh -o BatchMode=yes -o ConnectTimeout=15 -o StrictHostKeyChecking=yes'
+    command = ['git']
+    if 'clone' in args and any(str(a).startswith('https://github.com/') for a in args) and shutil.which('gh'):
+        # Reuse an existing GitHub CLI login without exposing tokens or changing Git config.
+        command += ['-c', 'credential.helper=!gh auth git-credential']
+    return subprocess.check_output([*command, *map(str, args)], env=env, timeout=120)
+
 
 def hashes(root):
-    return {str(p.relative_to(root)): hashlib.sha256(p.read_bytes()).hexdigest()
-            for p in root.rglob('*') if p.is_file()
-            and p.name != STATE and '__pycache__' not in p.relative_to(root).parts}
+    if root.is_symlink():
+        raise ValueError('Skill directory must not be a symlink: ' + str(root))
+    result = {}
+    for p in root.rglob('*'):
+        if p.is_symlink():
+            raise ValueError('不支持符号链接：' + str(p))
+        if p.is_file() and p.name != STATE and '__pycache__' not in p.relative_to(root).parts:
+            result[p.relative_to(root).as_posix()] = hashlib.sha256(p.read_bytes()).hexdigest()
+    return result
+
+
+def validate(root, name):
+    text = (root/'SKILL.md').read_text()
+    front = re.match(r'\A---\n(.*?)\n---(?:\n|$)', text, re.S)
+    if not front or not re.search(r'^name: ' + re.escape(name) + r'\s*$', front[1], re.M):
+        raise ValueError('Skill 名称或 frontmatter 无效：' + name)
+    if not re.search(r'^description: \S', front[1], re.M):
+        raise ValueError('缺少 description：' + name)
+    hashes(root)
+    for doc in root.rglob('*.md'):
+        for target in re.findall(r'(?<!!)\[[^\]]*\]\(([^)]+)\)', doc.read_text()):
+            if '://' in target or target.startswith('#'):
+                continue
+            dest = (doc.parent/target.split('#')[0]).resolve()
+            if not dest.is_relative_to(root.resolve()) or not dest.exists():
+                raise ValueError('Skill 引用不存在或越界：' + str(doc) + ' → ' + target)
+    if name == 'harness-update':
+        compile((root/'scripts/update.py').read_text(), 'update.py', 'exec')
+    else:
+        for required in ('references/initialization.md', 'references/source-to-spec.md',
+                         'templates/feature.md', 'templates/spec.md',
+                         'assets/AGENTS.md', 'assets/.harness/index.md',
+                         'assets/.harness/verification.md'):
+            if not (root/required).is_file():
+                raise ValueError('缺少资源：' + required)
+
+
+def historical_match(source, name, current):
+    """Recognize an unmodified standard-installer copy without trusting local metadata."""
+    path = 'skills/' + name
+    revisions = git('-C', source, 'log', '--format=%H', '--', path).decode().splitlines()
+    for revision in revisions:
+        tree = git('-C', source, 'ls-tree', '-rz', revision + ':' + path)
+        candidate = {}
+        for entry in tree.split(b'\0'):
+            if not entry:
+                continue
+            meta, raw_path = entry.split(b'\t', 1)
+            mode, kind, oid = meta.split()
+            if kind != b'blob' or mode == b'120000':
+                raise ValueError('历史包包含不支持的条目')
+            candidate[raw_path.decode()] = hashlib.sha256(git('-C', source, 'cat-file', 'blob', oid.decode())).hexdigest()
+        if candidate == current:
+            return revision
+    return None
+
+
+def recover(parent):
+    transaction = parent/TRANSACTION
+    if not transaction.is_dir():
+        raise ValueError('没有待恢复的更新')
+    if (transaction/'committed').exists():
+        # Both installs are complete. Partial backup cleanup must never roll one back.
+        shutil.rmtree(transaction)
+        return
+    # A backup exists only after the original directory was renamed successfully.
+    for name in NAMES:
+        backup, dst = transaction/'backup'/name, parent/name
+        if backup.exists():
+            if dst.exists():
+                shutil.rmtree(dst)
+            backup.rename(dst)
+    shutil.rmtree(transaction)
+
 
 def update(source, parent, revision, check=False):
+    transaction = parent/TRANSACTION
+    if transaction.exists():
+        raise ValueError('发现未完成事务，请先执行 --recover；备份：' + str(transaction))
     for name in NAMES:
         src, dst = source/'skills'/name, parent/name
-        if not (src/'SKILL.md').is_file() or not dst.is_dir():
-            raise SystemExit('缺少 Skill，先安装两个入口：' + name)
-        incoming, current = hashes(src), hashes(dst)
+        validate(src, name)
+        if not dst.is_dir():
+            raise ValueError('缺少已安装 Skill：' + name)
+        current = hashes(dst)
         state = dst/STATE
         baseline = json.loads(state.read_text()) if state.exists() else None
-        if baseline and current != baseline['files']:
-            raise SystemExit('检测到本地修改或额外文件，停止更新：' + name)
-        if not baseline and current != incoming:
-            raise SystemExit('缺少安装基线且内容不同，停止更新：' + name)
+        if baseline:
+            if current != baseline.get('files'):
+                raise ValueError('检测到本地修改或额外文件，停止更新：' + name)
+        elif current != hashes(src) and not historical_match(source, name, current):
+            raise ValueError('安装内容不匹配可信历史版本，停止更新：' + name)
     if check:
-        print('远端版本：' + revision + '；两个 Skill 均可安全更新。')
+        print('远端版本：' + revision + '；两个 Skill 均可安全更新（未写入）。')
         return
-    with tempfile.TemporaryDirectory(prefix='harness-backup-') as tmp:
-        backup = Path(tmp)
+    transaction.mkdir()  # Also excludes concurrent updaters; do not auto-recover a live run.
+    try:
+        (transaction/'backup').mkdir()
+        (transaction/'new').mkdir()
+        (transaction/'transaction.json').write_text(json.dumps({'commit': revision, 'skills': NAMES}))
         for name in NAMES:
-            shutil.copytree(parent/name, backup/name)
+            stage = transaction/'new'/name
+            shutil.copytree(source/'skills'/name, stage)
+            validate(stage, name)
+            (stage/STATE).write_text(json.dumps({'commit': revision, 'files': hashes(stage)}, indent=2)+'\n')
+        for name in NAMES:
+            (parent/name).rename(transaction/'backup'/name)
+            (transaction/'new'/name).rename(parent/name)
+        (transaction/'committed').write_text(revision + '\n')
+    except BaseException:
         try:
-            for name in NAMES:
-                dst = parent/name
-                shutil.rmtree(dst)
-                shutil.copytree(source/'skills'/name, dst)
-                (dst/STATE).write_text(json.dumps({'commit': revision, 'files': hashes(dst)}, ensure_ascii=False, indent=2)+'\n')
-        except Exception:
-            for name in NAMES:
-                if (parent/name).exists():
-                    shutil.rmtree(parent/name)
-                shutil.copytree(backup/name, parent/name)
-            raise
+            recover(parent)
+        except BaseException as error:
+            raise RuntimeError('恢复失败，保留备份；请执行 --recover：' + str(transaction)) from error
+        raise
+    shutil.rmtree(transaction)
     print('两个 Skill 已更新至 ' + revision + '；项目文件未修改。')
+
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--check', action='store_true')
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument('--check', action='store_true')
+    mode.add_argument('--recover', action='store_true')
+    parser.add_argument('--repo', default=REPO, help='可信 Git 仓库 HTTPS/SSH 地址；默认官方仓库')
     args = parser.parse_args()
     parent = Path(__file__).resolve().parents[2]
     if (parent.parent/'.git').exists():
-        raise SystemExit('当前为仓库开发副本，请在用户级安装中执行更新。')
+        raise ValueError('请在用户级安装中执行，不能更新开发副本')
+    if args.recover:
+        recover(parent)
+        print('已完成事务恢复或已提交事务清理。')
+        return
+    if (parent/TRANSACTION).exists():
+        raise ValueError('存在未完成事务；确认无更新进程运行后执行 --recover')
     with tempfile.TemporaryDirectory(prefix='harness-source-') as tmp:
         source = Path(tmp)/'repo'
-        subprocess.run(['git','clone','--quiet','--depth','1','--branch','main',REPO,str(source)],check=True)
-        revision = subprocess.check_output(['git','-C',str(source),'rev-parse','HEAD'],text=True).strip()
-        update(source,parent,revision,args.check)
+        git('clone', '--quiet', '--single-branch', '--branch', 'main', args.repo, source)
+        revision = git('-C', source, 'rev-parse', 'HEAD').decode().strip()
+        update(source, parent, revision, args.check)
+
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except subprocess.SubprocessError as error:
+        raise SystemExit('更新停止：' + str(error) + '\n请检查仓库读取权限、凭据或网络；可用 --repo 指定可信地址。')
+    except (ValueError, OSError) as error:
+        raise SystemExit('更新停止：' + str(error))
