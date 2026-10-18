@@ -1,0 +1,4 @@
+interface:
+  display_name: "Harness Init"
+  short_description: "使用内置模板初始化项目指令与知识框架，保留已有资料和改动"
+  default_prompt: "使用 $harness-init 初始化当前项目。"
