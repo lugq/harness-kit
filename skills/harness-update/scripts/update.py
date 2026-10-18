@@ -58,6 +58,7 @@ def validate(root, name):
     else:
         for required in ('references/initialization.md', 'references/source-to-spec.md',
                          'templates/feature.md', 'templates/spec.md',
+                         'scripts/validate_agents.py',
                          'assets/AGENTS.md', 'assets/.harness/index.md',
                          'assets/.harness/verification.md'):
             if not (root/required).is_file():
