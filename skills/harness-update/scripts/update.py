@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Safely update the installed HarnessKit pair; never touch project files."""
+"""Safely update installed HarnessKit skills; never touch project files."""
 import argparse
 import hashlib
 import json
@@ -11,7 +11,7 @@ import subprocess
 import tempfile
 
 REPO = 'https://github.com/lugq/harness-kit.git'
-NAMES = ('harness-init', 'harness-update')
+NAMES = ('harness-init', 'harness-update', 'harness-spec')
 STATE = '.harness-install.json'
 TRANSACTION = '.harness-update-transaction'
 
@@ -55,6 +55,12 @@ def validate(root, name):
                 raise ValueError('Skill 引用不存在或越界：' + str(doc) + ' → ' + target)
     if name == 'harness-update':
         compile((root/'scripts/update.py').read_text(), 'update.py', 'exec')
+    elif name == 'harness-spec':
+        for required in ('references/maintenance.md', 'templates/feature.md',
+                         'templates/spec.md', 'scripts/check_docs.py'):
+            if not (root/required).is_file():
+                raise ValueError('缺少资源：' + required)
+        compile((root/'scripts/check_docs.py').read_text(), 'check_docs.py', 'exec')
     else:
         for required in ('references/initialization.md', 'references/source-to-spec.md',
                          'templates/feature.md', 'templates/spec.md',
@@ -93,6 +99,8 @@ def recover(parent):
         # Both installs are complete. Partial backup cleanup must never roll one back.
         shutil.rmtree(transaction)
         return
+    state_path = transaction/'transaction.json'
+    absent = json.loads(state_path.read_text()).get('absent', []) if state_path.exists() else []
     # A backup exists only after the original directory was renamed successfully.
     for name in NAMES:
         backup, dst = transaction/'backup'/name, parent/name
@@ -100,6 +108,8 @@ def recover(parent):
             if dst.exists():
                 shutil.rmtree(dst)
             backup.rename(dst)
+        elif name in absent and not (transaction/'new'/name).exists() and dst.exists():
+            shutil.rmtree(dst)
     shutil.rmtree(transaction)
 
 
@@ -107,9 +117,15 @@ def update(source, parent, revision, check=False):
     transaction = parent/TRANSACTION
     if transaction.exists():
         raise ValueError('发现未完成事务，请先执行 --recover；备份：' + str(transaction))
+    absent = []
     for name in NAMES:
         src, dst = source/'skills'/name, parent/name
         validate(src, name)
+        if dst.is_symlink():
+            raise ValueError('Skill directory must not be a symlink: ' + str(dst))
+        if name == 'harness-spec' and not dst.exists():
+            absent.append(name)
+            continue
         if not dst.is_dir():
             raise ValueError('缺少已安装 Skill：' + name)
         current = hashes(dst)
@@ -121,20 +137,21 @@ def update(source, parent, revision, check=False):
         elif current != hashes(src) and not historical_match(source, name, current):
             raise ValueError('安装内容不匹配可信历史版本，停止更新：' + name)
     if check:
-        print('远端版本：' + revision + '；两个 Skill 均可安全更新（未写入）。')
+        print('远端版本：' + revision + '；Skills 可安全更新，缺少的 harness-spec 将新增（未写入）。')
         return
     transaction.mkdir()  # Also excludes concurrent updaters; do not auto-recover a live run.
     try:
         (transaction/'backup').mkdir()
         (transaction/'new').mkdir()
-        (transaction/'transaction.json').write_text(json.dumps({'commit': revision, 'skills': NAMES}))
+        (transaction/'transaction.json').write_text(json.dumps({'commit': revision, 'skills': NAMES, 'absent': absent}))
         for name in NAMES:
             stage = transaction/'new'/name
             shutil.copytree(source/'skills'/name, stage)
             validate(stage, name)
             (stage/STATE).write_text(json.dumps({'commit': revision, 'files': hashes(stage)}, indent=2)+'\n')
         for name in NAMES:
-            (parent/name).rename(transaction/'backup'/name)
+            if name not in absent:
+                (parent/name).rename(transaction/'backup'/name)
             (transaction/'new'/name).rename(parent/name)
         (transaction/'committed').write_text(revision + '\n')
     except BaseException:
@@ -144,7 +161,7 @@ def update(source, parent, revision, check=False):
             raise RuntimeError('恢复失败，保留备份；请执行 --recover：' + str(transaction)) from error
         raise
     shutil.rmtree(transaction)
-    print('两个 Skill 已更新至 ' + revision + '；项目文件未修改。')
+    print('HarnessKit Skills 已更新至 ' + revision + '；项目文件未修改。')
 
 
 def main():

@@ -174,6 +174,42 @@ class UpdateTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             u.update(self.source, self.parent, 'new')
 
+    def test_two_entry_install_migrates_to_three(self):
+        shutil.rmtree(self.parent/'harness-spec')
+        self.baseline_for_existing()
+        u.update(self.source, self.parent, 'new', check=True)
+        self.assertFalse((self.parent/'harness-spec').exists())
+        u.update(self.source, self.parent, 'new')
+        for name in u.NAMES:
+            self.assertEqual(u.hashes(self.parent/name), u.hashes(self.source/'skills'/name))
+
+    def baseline_for_existing(self):
+        for name in u.NAMES:
+            if (self.parent/name).exists():
+                (self.parent/name/u.STATE).write_text(json.dumps({'commit': 'old', 'files': self.before[name]}))
+
+    def test_new_entry_removed_on_failed_migration(self):
+        shutil.rmtree(self.parent/'harness-spec')
+        self.baseline_for_existing()
+        original = Path.write_text
+        def fail(path, *args, **kwargs):
+            if path.name == 'committed':
+                raise OSError('interrupted before commit marker')
+            return original(path, *args, **kwargs)
+        with patch.object(Path, 'write_text', fail):
+            with self.assertRaises(OSError):
+                u.update(self.source, self.parent, 'new')
+        self.assertFalse((self.parent/'harness-spec').exists())
+        for name in ('harness-init', 'harness-update'):
+            self.assertEqual(u.hashes(self.parent/name), self.before[name])
+
+    def test_new_entry_local_edits_block_update(self):
+        self.baseline()
+        (self.parent/'harness-spec'/'local.md').write_text('local edits')
+        with self.assertRaises(ValueError):
+            u.update(self.source, self.parent, 'new')
+        self.assertTrue((self.parent/'harness-spec'/'local.md').exists())
+
 
 if __name__ == '__main__':
     unittest.main()

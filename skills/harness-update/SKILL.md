@@ -1,11 +1,11 @@
 ---
 name: harness-update
-description: 从 lugq/harness-kit 更新已安装的 harness-init 与 harness-update。用于更新 HarnessKit Skills；不初始化或更新项目知识文件。
+description: 从 lugq/harness-kit 更新 harness-init、harness-spec 和 harness-update，兼容旧版两入口安装。用于更新 Skills 本身，不维护项目知识。
 ---
 
 # Harness 更新
 
-执行 `python3 <本 Skill 绝对目录>/scripts/update.py`，同时更新同一用户级 Skill 目录中的 harness-init 和 harness-update。可加 `--check` 仅检查。
+执行 `python3 <本 Skill 绝对目录>/scripts/update.py`，同时更新同一用户级 Skill 目录中的 harness-init、harness-spec 和 harness-update。已有旧版两个入口时自动补装缺少的 harness-spec；不覆盖同名本地修改。可加 `--check` 仅检查，不安装或写入。
 
 需要 Python 3.9+、Git 和该仓库读取权限。脚本验证安装基线；有本地修改、额外文件、无法核验的安装或认证失败时停止，报告原因，不强制覆盖。缺少基线时核验可信 main 历史中的完整文件哈希，匹配旧版即可升级并建立基线。默认 HTTPS 使用现有凭据，也可复用 GitHub CLI 已有登录；可用 --repo 指定可信 SSH/HTTPS 仓库，不改变全局 Git 凭据配置。
 

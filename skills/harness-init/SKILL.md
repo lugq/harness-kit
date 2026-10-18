@@ -1,6 +1,6 @@
 ---
 name: harness-init
-description: 读取真实代码、构建配置与测试，生成项目 AGENTS.md 和 .harness 知识文档。用于项目初始化；不用于更新 Skill 或日常业务开发。
+description: 读取真实代码、构建配置与测试，首次生成项目 AGENTS.md 和 .harness 知识文档。用于初始化；后续维护功能或技术文档使用 harness-spec，更新 Skill 使用 harness-update。
 ---
 
 # Harness 初始化

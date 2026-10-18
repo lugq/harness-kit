@@ -1,0 +1,4 @@
+interface:
+  display_name: "Harness Spec"
+  short_description: "根据真实代码新增或维护功能与技术文档，同步索引并核对证据"
+  default_prompt: "使用 $harness-spec 维护当前项目相关的功能或技术文档，并同步索引。"
