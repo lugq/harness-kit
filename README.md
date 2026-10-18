@@ -71,3 +71,9 @@ skills/
 规范和模板随仓库版本分发，运行不依赖在线 Page。[Page](https://chatgpt.com/space/page_bd948ce9c828819197f84cee0c3dde33) 仅为阅读映射，修改仓库后人工同步。
 
 旧版单入口 harness-kit 安装需先核对本地改动，再迁移为两个独立目录并移出旧入口，避免重复菜单。缺少安装基线且存在差异时，不强制覆盖。
+
+## 从代码生成 Spec 的质量标准
+
+初始化采用“代码地图 → 实际主题 → 证据清单 → 具体契约 → 完成检查”。模板允许按代码边界调整；重要规则附源码或测试依据，接口写清签名、字段和失败边界。删除不适用章节与填空提示，确有缺口则列具体未确认事项。未经指定不读取旧知识资料，不要求安装额外分析工具。
+
+方法参考 [Trellis Spec Bootstrap](https://github.com/mindfold-ai/Trellis/tree/main/.agents/skills/trellis-spec-bootstrap)，流程按 HarnessKit 范围独立整理。
