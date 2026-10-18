@@ -77,3 +77,7 @@ skills/
 初始化采用“代码地图 → 实际主题 → 证据清单 → 具体契约 → 完成检查”。模板允许按代码边界调整；重要规则附源码或测试依据，接口写清签名、字段和失败边界。删除不适用章节与填空提示，确有缺口则列具体未确认事项。未经指定不读取旧知识资料，不要求安装额外分析工具。
 
 方法参考 [Trellis Spec Bootstrap](https://github.com/mindfold-ai/Trellis/tree/main/.agents/skills/trellis-spec-bootstrap)，流程按 HarnessKit 范围独立整理。
+
+## 文档模板与质量检查
+
+Skill 内 templates/feature.md 和 templates/spec.md 分别约定功能闭环与技术契约内容；它们是写作骨架，不是直接复制的项目成品。跨边界数据需要字段、类型、默认值、转换和调用两端的完整对照。关键结论就近关联源码；检查既从功能清单查遗漏，也从文档反查实际代码。共同规则保留路径例外，执行记录集中在 verification.md。文件按主题命名，不加重复的 feature-/spec- 前缀。
