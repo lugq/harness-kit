@@ -26,6 +26,7 @@ def validate(after, original=None, knowledge_dir='.harness'):
     # Existing document owns its title; appending another H1 is not a merge.
     allowed.pop(template.splitlines()[0], None)
     additions = Counter()
+    added_positions = []
     for tag, i, j, a, b in difflib.SequenceMatcher(None, old_lines, new_lines, autojunk=False).get_opcodes():
         if tag in ('delete', 'replace'):
             raise ValueError('Existing AGENTS.md content or line endings were changed')
@@ -33,8 +34,18 @@ def validate(after, original=None, knowledge_dir='.harness'):
             for line in new_lines[a:b]:
                 if line.rstrip(b'\r\n'):
                     additions[line.rstrip(b'\r\n')] += 1
+            added_positions.extend(k for k in range(a, b) if new_lines[k].strip())
     if additions - allowed:
         raise ValueError('Added text is outside the template or repeats template rules')
+    if added_positions:
+        start = b'<!-- harness-kit:project-rules:start -->'
+        end = b'<!-- harness-kit:project-rules:end -->'
+        lines = [line.rstrip(b'\r\n') for line in new_lines]
+        if lines.count(start) != 1 or lines.count(end) != 1:
+            raise ValueError('Template additions require exactly one start/end marker pair')
+        lower, upper = lines.index(start), lines.index(end)
+        if lower >= upper or any(not lower <= k <= upper for k in added_positions):
+            raise ValueError('Template additions must be within the project-rules markers')
 
 
 def main():

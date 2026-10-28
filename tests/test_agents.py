@@ -76,6 +76,20 @@ class AgentsTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             v.validate(self.after, self.before)
 
+    def test_missing_end_marker_rejected_in_merge(self):
+        self.before.write_bytes(b'# Existing project\n')
+        self.after.write_bytes(self.before.read_bytes()+self.body.replace(b'<!-- harness-kit:project-rules:end -->', b''))
+        with self.assertRaises(ValueError):
+            v.validate(self.after, self.before)
+
+    def test_template_rule_added_outside_markers_rejected(self):
+        self.before.write_bytes(b'# Existing project\n')
+        rule = next(line for line in self.body.splitlines(keepends=True) if line.startswith(b'- '))
+        body = self.body.replace(rule, b'', 1)
+        self.after.write_bytes(self.before.read_bytes()+rule+body)
+        with self.assertRaises(ValueError):
+            v.validate(self.after, self.before)
+
 
 if __name__ == '__main__':
     unittest.main()
