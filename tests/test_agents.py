@@ -84,7 +84,8 @@ class AgentsTests(unittest.TestCase):
 
     def test_template_rule_added_outside_markers_rejected(self):
         self.before.write_bytes(b'# Existing project\n')
-        rule = next(line for line in self.body.splitlines(keepends=True) if line.startswith(b'- '))
+        rule = next(line for line in self.body.splitlines(keepends=True)
+                    if line.strip() and not line.startswith((b'#', b'<!--')))
         body = self.body.replace(rule, b'', 1)
         self.after.write_bytes(self.before.read_bytes()+rule+body)
         with self.assertRaises(ValueError):
